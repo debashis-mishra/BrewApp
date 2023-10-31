@@ -61,7 +61,7 @@ app.get('/books', async (req, res) => {
 
 // View details of a specific book by its ID
 app.get('/books/:id', async (req, res) => {
-    const id = req.params;
+    const id = req.params.id;
 
     await Book.findById(id)
         .then((book) => {
@@ -79,24 +79,29 @@ app.get('/books/:id', async (req, res) => {
 
 
 // Update a book's details
-app.put('/books/:id', async (req, res) => {
-    const { id } = req.params;
+app.put('/books', async (req, res) => {
+    const id = req.query.id;
     const { title, author, summary } = req.body;
 
-    let book = await Book.findById(id);
-
-    if (!book) {
-        res.status(404).send('Book not found!');
-    } else {
-        await Book.updateOne({ _id: id }, { $set: { title, author, summary } })
-            .then(() => {
-                res.send('Book updated!');
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).send('Error updating book');
-            });
-    }
+    await Book.findById(id)
+        .then(async (book) => {
+            if (!book) {
+                res.status(404).send('Book not found!');
+            } else {
+                await Book.updateOne({ _id: id }, { $set: { title, author, summary } })
+                    .then(() => {
+                        res.send('Book updated!');
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        res.status(500).send('Error updating book');
+                    });
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            res.status(500).send('Error updating book');
+        });
 });
 
 
